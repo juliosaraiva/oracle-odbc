@@ -12,18 +12,18 @@
   register: os_package_installed
 
 - name: Copying oracle dependencies to zabbix server
-    copy:
-      src: "{{ item }}"
-      dest: /tmp/
-      owner: root
-      group: root
-      mode: 0644
-    loop:
-      - oracle-instantclient18.5-basic-18.5.0.0.0-3.x86_64.rpm
-      - oracle-instantclient18.5-odbc-18.5.0.0.0-3.x86_64.rpm
-    tags:
-      - copy_packages
-    register: copy_oracle_pkg
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - oracle-instantclient18.5-basic-18.5.0.0.0-3.x86_64.rpm
+    - oracle-instantclient18.5-odbc-18.5.0.0.0-3.x86_64.rpm
+  tags:
+    - copy_packages
+  register: copy_oracle_pkg
   when: os_package_installed is success
 
 - name: Installing Oracle dependencies
