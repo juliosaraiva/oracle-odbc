@@ -1,5 +1,1 @@
 ---
-oracle_libs:
-  - {src: 'libsqora.so.18.1', dest: '/usr/lib/oracle/18.5/client64/lib/libsqora.so'}
-  - { src: 'libclntsh.so.18.1', dest: '/lib64/'}
-  - { src: 'libclntshcore.so.18.1', dest: '/lib64/' }
