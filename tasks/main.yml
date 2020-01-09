@@ -1,0 +1,3 @@
+---
+- name: Setting up oracle on zabbix server
+  import_tasks: oracle_odbc.yml

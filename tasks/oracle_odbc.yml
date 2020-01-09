@@ -1,0 +1,72 @@
+---
+- name: Updating SO...
+  yum:
+    pkg: "{{ item }}"
+  loop:
+    - yum-utils
+    - libaio-devel
+    - unixODBC
+    - unixODBC-devel
+  tags:
+    - os_packages
+  register: os_package_installed
+
+- name: Copying oracle dependencies to zabbix server
+    copy:
+      src: "{{ item }}"
+      dest: /tmp/
+      owner: root
+      group: root
+      mode: 0644
+    loop:
+      - oracle-instantclient18.5-basic-18.5.0.0.0-3.x86_64.rpm
+      - oracle-instantclient18.5-odbc-18.5.0.0.0-3.x86_64.rpm
+    tags:
+      - copy_packages
+    register: copy_oracle_pkg
+  when: os_package_installed is success
+
+- name: Installing Oracle dependencies
+  apt_rpm:
+    pkg: "{{ item }}"
+  loop:
+    - /tmp/oracle-instantclient18.5-basic-18.5.0.0.0-3.x86_64.rpm
+    - /tmp/oracle-instantclient18.5-odbc-18.5.0.0.0-3.x86_64.rpm
+  tags:
+    - oracle_packages
+  when: copy_oracle_pkg is success
+
+- name: Creating link for oracle libs
+  file:
+    src: '/usr/lib/oracle/18.5/client64/lib/{{ item.src }}'
+    dest: "{{ item.dest }}"
+    state: link
+  loop: {{ oracle_libs }}
+  register: created_link_to_oracle_libs
+
+- name: Creating /etc/oracle directory
+  file:
+    path: /etc/oracle
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: Copying odbcinst.ini
+  copy:
+    src: odbcinst.ini
+    dest: /etc/odbcinst.ini
+    owner: root
+    group: root
+    mode: 0644
+  register: odbcinst
+
+- name: Setting up environment files
+  copy:
+    src: oracle-env.sh
+    dest: /etc/profile.d/oracle-env.sh
+    owner: root
+    group: root
+    mode: '0644'
+  register: environment_files
+    
