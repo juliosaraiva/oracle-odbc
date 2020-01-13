@@ -39,12 +39,12 @@
 - name: Creating link for oracle libs
   file:
     src: '/usr/lib/oracle/18.5/client64/lib/{{ item.filename }}'
-    dest: "{{ item.dest }}{{ item.filename }}"
+    dest: "{{ item.dest }}"
     state: link
   loop:
     - {filename: 'libsqora.so.18.1', dest: '/usr/lib/oracle/18.5/client64/lib/libsqora.so'}
-    - { filename: 'libclntsh.so.18.1', dest: '/lib64/'}
-    - { filename: 'libclntshcore.so.18.1', dest: '/lib64/' }
+    - { filename: 'libclntsh.so.18.1', dest: '/lib64/libclntsh.so.18.1'}
+    - { filename: 'libclntshcore.so.18.1', dest: '/lib64/libclntshcore.so.18.1' }
   register: created_link_to_oracle_libs
 
 - name: Creating /etc/oracle directory
@@ -54,22 +54,29 @@
     group: root
     mode: '0755'
     state: directory
+  tags:
+    - oracle_dir
 
-- name: Copying odbcinst.ini
-  copy:
-    src: odbcinst.ini
-    dest: /etc/odbcinst.ini
-    owner: root
-    group: root
-    mode: 0644
-  register: odbcinst
+- name: Insert/Update Oracle ODBC Driver
+  blockinfile:
+    path: /etc/odbcinst.ini
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    backup: yes
+    block: "{{ lookup('file', 'odbcinst.ini') }}"
+  tags:
+    - odbcinst
 
 - name: Setting up environment files
   copy:
     src: oracle-env.sh
-    dest: /etc/profile.d/oracle-env.sh
+    dest: "{{ item }}"
     owner: root
     group: root
     mode: '0644'
+  loop:
+    - /etc/profile.d/oracle-env.sh
+    - /etc/sysconfig/zabbix-server
   register: environment_files
-    
+
+
+
