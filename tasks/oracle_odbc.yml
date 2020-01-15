@@ -62,9 +62,11 @@
     path: /etc/odbcinst.ini
     marker: "# {mark} ANSIBLE MANAGED BLOCK"
     backup: yes
-    block: "{{ lookup('file', 'odbcinst.ini') }}"
+    block: "{{ lookup('file', filename) }}"
   tags:
     - odbcinst
+  vars:
+    - filename: "{{ file }}"
 
 - name: Setting up environment files
   copy:
@@ -77,6 +79,18 @@
     - /etc/profile.d/oracle-env.sh
     - /etc/sysconfig/zabbix-server
   register: environment_files
+  notify: Restart zabbix-server
+
+- name: Copying scripts to zabbix-server
+  copy:
+    src: "{{ item }}"
+    dest: /etc/zabbix/scripts
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - userparameter_oracle.conf
+    - oracle-find_instance.sh
 
 
 
